@@ -1,6 +1,6 @@
 TT_STRIP = /^(?:\t|[ ]{4})(.*$)/
 TT_TAG_GROUP = /^=(\w)= (.*\n(?:(?:[ ]{4}|\t).*\n)*)/
-TT_HEADER = /(.*)\n((?:(?:[ ]{4}|\t).*\n)*)/
+TT_HEADER = /(.+)\n?((?:(?:[ ]{4}|\t).*\n)*)/
 TT_LIST_GROUP = /((?:^\((#|\*)\).*(?:\n|\z))(?:(?=\(\2\)|[\t ]).*(?:\n|\z))*)/
 TT_UNORDERED_ITEM = /^\(\*\) (.*\n(?:(?!\(\*\)).*\n|\n*)*)/
 TT_ORDERED_ITEM = /^\(#\) (.*\n(?:(?!\(#\)).*\n|\n*)*)/
@@ -20,8 +20,10 @@ TT_NAMESPACE = /(.+):(.+)/
 
 $NAMESPACE_ROOT = '/edge'
 
+require_relative 'cli'
+
 module TimberText
-  VERSION = '0.1.2'
+  VERSION = '0.1.3'
 
   def self.rinse_repeat( group , level = nil)
     if group
@@ -56,9 +58,9 @@ module TimberText
             "<h#{level}>#{$1}</h#{level}>\n" + rinse_repeat($2,level)
           end
         when 'p'
-          '<p>' + rinse_repeat($2,level) + '</p>\n'
+          '<p>' + rinse_repeat($2,level) + "</p>\n"
         when 'q'
-          '<blockquote>' + rinse_repeat( $2 , level) + '</blockquote>\n'
+          '<blockquote>' + rinse_repeat( $2 , level) + "</blockquote>\n"
         else
           ''
       end
@@ -95,11 +97,11 @@ module TimberText
     text.gsub!(TT_EMPHASIS) do
       inside = $2
       case $1.match(/(<*)/)[0].length
-        when 1
-          "<em>#{inside}</em>"
         when 2
+          "<em>#{inside}</em>"
+        when 3,4
           "<strong>#{inside}</strong>"
-        when 3
+        when 5
           "<em><strong>#{inside}</strong></em>"
         else
           inside
@@ -147,10 +149,9 @@ module TimberText
   end
 
   def self.add_references( text )
-    text += '<span>References</span><ul>'
+    text += '<br/><h4>References</h4><ul style="list-style-type:none;">'
     $USED_REFS.each_with_index do |k,i|
-      puts k
-      text += "\n<li><a id=\"REF#{i+1}\" href=\"#{$REFS[k][:src]}\">[#{i+1}] #{$REFS[k][:label]}</a></li>"
+      text += "\n<li>[#{i+1}] <a id=\"REF#{i+1}\" href=\"#{$REFS[k][:src]}\">#{$REFS[k][:label]}</a></li>"
     end
     text += '</ul>'
     text

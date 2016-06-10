@@ -11,4 +11,5 @@ Gem::Specification.new do |s|
   s.files       = %w(lib/timbertext.rb LICENSE README.md)
   s.homepage    = 'http://rubygems.org/gems/timbertext'
   s.license     = 'MIT'
+	s.add_runtime_dependency 'commander'
 end
